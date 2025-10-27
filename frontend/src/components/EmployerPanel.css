@@ -1,0 +1,209 @@
+.employer-panel {
+  /* 移除最大宽度和居中，让其填满容器 */
+}
+
+.employer-panel .card {
+  /* 移除卡片的悬停效果，因为它是主要内容 */
+  transform: none !important;
+}
+
+.employer-panel h2 {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  font-size: 0.95rem;
+}
+
+.payroll-form {
+  margin-top: 2rem;
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 员工列表 */
+.employees-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.employee-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 150px 40px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.employee-number {
+  background: var(--bg-tertiary);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--accent-green);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-dark);
+}
+
+.address-input {
+  font-family: monospace;
+  font-size: 0.9rem;
+}
+
+.salary-input {
+  font-weight: 600;
+}
+
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.remove-btn:hover {
+  opacity: 1;
+  transform: none;
+  box-shadow: none;
+}
+
+.add-employee-btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* 总金额 */
+.total-amount {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-green);
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+}
+
+.total-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.total-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+/* 提交按钮 */
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+/* 结果消息 */
+.result-message {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 2px solid;
+}
+
+.result-message.success {
+  background-color: rgba(72, 187, 120, 0.1);
+  border-color: #48bb78;
+  color: #68d391;
+}
+
+.result-message.error {
+  background-color: rgba(245, 101, 101, 0.1);
+  border-color: #f56565;
+  color: #fc8181;
+}
+
+.result-message pre {
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin: 0;
+}
+
+/* 帮助信息 */
+.help-box {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-dark);
+}
+
+.help-box h4 {
+  margin-bottom: 1rem;
+  color: var(--accent-gold);
+  font-weight: 700;
+}
+
+.help-box ul {
+  list-style: none;
+  padding: 0;
+}
+
+.help-box li {
+  padding: 0.5rem 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .employee-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  .employee-number {
+    display: none;
+  }
+  
+  .remove-btn {
+    position: absolute;
+    right: 1rem;
+  }
+  
+  .employee-row {
+    position: relative;
+    padding: 1rem;
+    background-color: #1a202c;
+    border-radius: 8px;
+  }
+}
+

@@ -1,0 +1,76 @@
+.contract-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.mode-toggle {
+  display: flex;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.contract-buttons {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--bg-primary);
+  padding: 0.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 8px var(--shadow-dark);
+  width: 100%;
+}
+
+.contract-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  background-color: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.contract-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  transform: none;
+  box-shadow: none;
+}
+
+.contract-btn.active {
+  background: var(--accent-green);
+  color: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.auto-mode-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.current-contract {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+

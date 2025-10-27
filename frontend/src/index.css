@@ -1,0 +1,226 @@
+/* 全局样式 - Dark Professional 风格 */
+:root {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Dark Professional 配色方案 */
+  --bg-primary: #0a0e27;
+  --bg-secondary: #151a2e;
+  --bg-tertiary: #1e2538;
+  --border-color: #2a3347;
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --accent-gold: #ffd700;
+  --accent-green: #10b981;
+  --accent-blue: #3b82f6;
+  --shadow-dark: rgba(0, 0, 0, 0.5);
+
+  color-scheme: dark;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  place-items: center;
+  /* 深色专业背景 - 微妙渐变 */
+  background: linear-gradient(135deg, #0a0e27 0%, #151a2e 50%, #0f1422 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* 微妙的网格背景 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* 按钮样式 - Dark Professional */
+button {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px var(--shadow-dark);
+}
+
+button:hover {
+  background: #2a3347;
+  border-color: #3a4357;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px var(--shadow-dark);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button.primary {
+  background: linear-gradient(135deg, var(--accent-green) 0%, #059669 100%);
+  border: 1px solid #10b981;
+  color: white;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+}
+
+button.primary:hover {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+button.secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+button.secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: #3a4357;
+}
+
+/* 输入框样式 - Dark Professional */
+input, select, textarea {
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 0.8em 1em;
+  font-size: 1em;
+  font-family: inherit;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  width: 100%;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+input::placeholder, select::placeholder, textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  background: var(--bg-tertiary);
+  border-color: var(--accent-green);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2),
+              inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* 卡片样式 - Dark Professional */
+.card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+  box-shadow: 0 4px 16px var(--shadow-dark);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  background: var(--bg-tertiary);
+  border-color: #3a4357;
+  box-shadow: 0 6px 20px var(--shadow-dark);
+  transform: translateY(-2px);
+}
+
+/* 状态徽章 - Dark Professional */
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 1px solid;
+  box-shadow: 0 2px 8px var(--shadow-dark);
+}
+
+.badge.success {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+}
+
+.badge.warning {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.badge.error {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.badge.info {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+/* 加载动画 */
+.spinner {
+  border: 3px solid #2d3748;
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .card {
+    padding: 1.5rem;
+  }
+  
+  button {
+    padding: 0.5em 1em;
+    font-size: 0.9em;
+  }
+}
+

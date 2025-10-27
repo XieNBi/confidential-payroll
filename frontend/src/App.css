@@ -1,0 +1,369 @@
+/* App 主样式 */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 0;
+}
+
+/* 欢迎页面容器 */
+.welcome-container {
+  max-width: 800px;
+  margin: 3rem auto;
+  padding: 2rem;
+}
+
+/* 三栏布局 */
+.three-column-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 320px;
+  gap: 0;
+  height: calc(100vh - 70px - 60px); /* 减去header和footer高度 */
+  overflow: hidden;
+}
+
+/* 左侧边栏 */
+.left-sidebar {
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  padding: 2rem 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: 4px 0 16px var(--shadow-dark);
+}
+
+.sidebar-header h3 {
+  color: var(--accent-gold);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sidebar-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.sidebar-tab:hover {
+  background: #2a3347;
+  border-color: #3a4357;
+  color: var(--text-primary);
+  transform: translateX(2px);
+}
+
+.sidebar-tab.active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  border-color: var(--accent-green);
+  color: var(--accent-green);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.3);
+}
+
+.tab-icon {
+  font-size: 1.5rem;
+}
+
+.tab-text {
+  font-size: 1rem;
+}
+
+.sidebar-status {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* 中间内容区 */
+.center-content {
+  background: var(--bg-primary);
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.content-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.content-header h2 {
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.content-subtitle {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.content-body {
+  /* Panel content goes here */
+}
+
+/* 右侧边栏 */
+.right-sidebar {
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border-color);
+  padding: 2rem 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: -4px 0 16px var(--shadow-dark);
+}
+
+.sidebar-info-card,
+.sidebar-help-card,
+.sidebar-tech-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px var(--shadow-dark);
+}
+
+.sidebar-info-card h4,
+.sidebar-help-card h4,
+.sidebar-tech-card h4 {
+  color: var(--accent-gold);
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.5px;
+}
+
+.mode-badge {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid var(--accent-green);
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  color: var(--accent-green);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.mode-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.help-steps {
+  list-style: none;
+  counter-reset: step-counter;
+  padding: 0;
+  margin: 0;
+}
+
+.help-steps li {
+  counter-increment: step-counter;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding: 0.75rem 0;
+  padding-left: 2rem;
+  position: relative;
+}
+
+.help-steps li::before {
+  content: counter(step-counter);
+  position: absolute;
+  left: 0;
+  top: 0.75rem;
+  background: var(--accent-green);
+  color: white;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.tech-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tech-features li {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  padding: 0.5rem 0;
+}
+
+/* 欢迎卡片 */
+.welcome-card {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.welcome-card h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--accent-gold);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.feature-list {
+  list-style: none;
+  text-align: left;
+  max-width: 400px;
+  margin: 2rem auto;
+}
+
+.feature-list li {
+  padding: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.connect-hint {
+  margin-top: 2rem;
+  font-size: 1.2rem;
+  color: var(--accent-green);
+  font-weight: 600;
+}
+
+
+/* 页脚 */
+.footer {
+  background: var(--bg-secondary);
+  padding: 2rem;
+  text-align: center;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer p {
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.footer a {
+  color: var(--accent-green);
+  text-decoration: none;
+  margin: 0 0.5rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.footer a:hover {
+  color: var(--accent-gold);
+  text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 1400px) {
+  .three-column-layout {
+    grid-template-columns: 240px 1fr 280px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .three-column-layout {
+    grid-template-columns: 220px 1fr 260px;
+  }
+  
+  .right-sidebar {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  /* 平板：隐藏右侧栏 */
+  .three-column-layout {
+    grid-template-columns: 240px 1fr;
+  }
+  
+  .right-sidebar {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  /* 手机：单栏布局 */
+  .three-column-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  
+  .left-sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 1.5rem 1rem;
+  }
+  
+  .sidebar-tabs {
+    flex-direction: row;
+  }
+  
+  .sidebar-tab {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .tab-icon {
+    font-size: 1.25rem;
+  }
+  
+  .tab-text {
+    display: none;
+  }
+  
+  .sidebar-status {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .center-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .content-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .welcome-container {
+    padding: 1rem;
+    margin: 2rem auto;
+  }
+  
+  .welcome-card {
+    padding: 2rem 1rem;
+  }
+  
+  .welcome-card h2 {
+    font-size: 1.5rem;
+  }
+}
+

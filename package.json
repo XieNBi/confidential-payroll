@@ -1,0 +1,25 @@
+{
+  "name": "confidential-payroll",
+  "version": "1.0.0",
+  "description": "机密薪酬系统 - 基于 Zama FHEVM 的隐私保护薪资发放平台",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:simple": "hardhat run scripts/deploy_simple.js --network sepolia",
+    "deploy:fhe": "hardhat run scripts/deploy_fhe.js --network sepolia",
+    "test": "hardhat test",
+    "frontend": "cd frontend && npm run dev"
+  },
+  "keywords": ["fhevm", "zama", "payroll", "privacy", "blockchain"],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0",
+    "dotenv": "^16.3.1"
+  },
+  "dependencies": {
+    "fhevm": "^0.7.0-0",
+    "fhevm-core-contracts": "^0.6.1"
+  }
+}
+
