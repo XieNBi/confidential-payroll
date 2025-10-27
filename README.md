@@ -1,4 +1,7 @@
 # 🔐 Confidential Payroll System
+<img width="2560" height="1279" alt="image" src="https://github.com/user-attachments/assets/3067ab64-b37d-4bde-9d8d-2d90780c1f5a" />
+- **Demo**: [Live Demo](https://celadon-meerkat-ee26c4.netlify.app/)
+
 
 > **Privacy-Preserving Payroll Platform Powered by Zama FHEVM**
 
