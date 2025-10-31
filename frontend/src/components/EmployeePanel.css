@@ -86,6 +86,90 @@
   font-size: 0.9rem;
 }
 
+/* 解密卡片 */
+.decryption-card {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--accent-blue);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  text-align: center;
+}
+
+.decryption-card h3 {
+  color: var(--accent-blue);
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.decryption-hint {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.decrypt-btn {
+  background: linear-gradient(135deg, var(--accent-blue) 0%, #2563eb 100%);
+  border: none;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.decrypt-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+}
+
+.decrypt-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 解密进度条 */
+.decryption-progress {
+  margin: 1.5rem 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-blue) 0%, var(--accent-green) 100%);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.progress-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+/* 解密错误 */
+.decryption-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+  color: #fca5a5;
+}
+
+.decryption-error p {
+  margin-bottom: 0.5rem;
+}
+
 /* 薪资卡片 */
 .salary-card {
   background: linear-gradient(135deg, var(--accent-green) 0%, #059669 100%);

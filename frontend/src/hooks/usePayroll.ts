@@ -13,6 +13,14 @@ import {
 } from '../constants/contracts';
 import { PAYROLL_SIMPLE_ABI, PAYROLL_FHE_ABI } from '../constants/abis';
 
+export enum PlanStatus {
+  ACTIVE = 0,
+  PENDING_DECRYPT = 1,
+  COMPLETED = 2,
+  CANCELLED = 3,
+  EXPIRED = 4
+}
+
 export interface PayrollPlan {
   id: number;
   employer: string;
@@ -20,7 +28,8 @@ export interface PayrollPlan {
   employeeCount: number;
   totalAmount: string; // 格式化后的 ETH
   createdAt: number;
-  isActive: boolean;
+  isActive: boolean; // 兼容旧代码
+  status?: PlanStatus; // 新状态枚举
 }
 
 export interface EmployeeSalary {
@@ -30,7 +39,7 @@ export interface EmployeeSalary {
 }
 
 export function usePayroll() {
-  const { signer, address } = useWallet();
+  const { signer } = useWallet();
   const { contractType } = useContract();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,7 +123,8 @@ export function usePayroll() {
     title: string,
     employees: string[],
     encryptedSalaries: string[], // 加密的薪资（handles）
-    inputProofs: string[]         // 证明（attestations）
+    inputProofs: string[],         // 证明（attestations）
+    totalAmount: bigint            // 总金额（Wei）
   ) => {
     try {
       setLoading(true);
@@ -124,13 +134,17 @@ export function usePayroll() {
 
       console.log("📝 创建薪酬计划 (FHE):", {
         title,
-        employees: employees.length
+        employees: employees.length,
+        totalAmount: ethers.formatEther(totalAmount)
       });
 
-      // 注意：FHE 模式下，总金额通过 msg.value 传递
-      // 这里需要前端计算总金额（或由企业输入）
-      // 简化处理：假设前端已经知道总金额
-      const totalAmount = ethers.parseEther("0.1"); // TODO: 实际应该计算
+      // 验证输入
+      if (employees.length !== encryptedSalaries.length) {
+        throw new Error("Employees and encrypted salaries length mismatch");
+      }
+      if (employees.length !== inputProofs.length) {
+        throw new Error("Employees and proofs length mismatch");
+      }
 
       const tx = await contract.createPayroll(
         title,
@@ -173,6 +187,19 @@ export function usePayroll() {
       const contract = getContract();
       const info = await contract.getPlanInfo(planId);
 
+      // FHE 模式返回 status (uint8), Simple 模式返回 isActive (bool)
+      let isActive: boolean;
+      let status: PlanStatus | undefined;
+
+      if (contractType === "fhe") {
+        // FHE 模式：info[6] 是 status (uint8)
+        status = Number(info[6]) as PlanStatus;
+        isActive = status === PlanStatus.ACTIVE || status === PlanStatus.PENDING_DECRYPT;
+      } else {
+        // Simple 模式：info[6] 是 isActive (bool)
+        isActive = info[6];
+      }
+
       return {
         id: Number(info[0]),
         employer: info[1],
@@ -180,13 +207,14 @@ export function usePayroll() {
         employeeCount: Number(info[3]),
         totalAmount: ethers.formatEther(info[4]),
         createdAt: Number(info[5]),
-        isActive: info[6],
+        isActive,
+        status,
       };
     } catch (err) {
       console.error("获取计划信息失败:", err);
       return null;
     }
-  }, [getContract]);
+  }, [getContract, contractType]);
 
   // 获取我的薪资
   const getMySalary = useCallback(async (planId: number): Promise<string | null> => {

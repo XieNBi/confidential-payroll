@@ -3,7 +3,7 @@
  * Based on documentation best practices
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ContractType, GatewayStatus } from '../constants/contracts';
 import { checkGatewayHealth, startGatewayMonitor } from '../utils/gateway';
 

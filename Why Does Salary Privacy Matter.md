@@ -358,7 +358,7 @@ async function createEncryptedPayroll(
 - 🤝 Direct collaboration with Zama team
 
 **Links**:
-- 🌐 **Live Demo**: 
+- 🌐 **Live Demo**: [https://confidential-payroll.vercel.app](https://confidential-payroll.vercel.app)
 - 💻 **GitHub**: [github.com/XieNBi/confidential-payroll](https://github.com/XieNBi/confidential-payroll)
 
 ---
@@ -388,5 +388,3 @@ async function createEncryptedPayroll(
 > **"Privacy is the power to selectively reveal oneself to the world."**
 
 **Let's build a Web3 world that is both transparent and respectful of privacy!** 🌐🔐
-
-

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { usePayroll } from '../hooks/usePayroll';
 import { useWallet } from '../contexts/WalletContext';
 import { useContract } from '../contexts/ContractContext';
+import { createEncryptedSalaries } from '../utils/fheEncryption';
 import './EmployerPanel.css';
 
 interface Employee {
@@ -14,9 +15,9 @@ interface Employee {
 }
 
 export default function EmployerPanel() {
-  const { address } = useWallet();
+  const { address, signer } = useWallet();
   const { contractType } = useContract();
-  const { createPayrollSimple, loading } = usePayroll();
+  const { createPayrollSimple, createPayrollFHE, loading } = usePayroll();
 
   const [title, setTitle] = useState('');
   const [employees, setEmployees] = useState<Employee[]>([
@@ -88,40 +89,84 @@ export default function EmployerPanel() {
       return;
     }
 
-    // FHE mode reminder
-    if (contractType === 'fhe') {
+    // Check wallet connection
+    if (!address || !signer) {
       setResult({ 
         type: 'error', 
-        message: '⚠️ FHE encryption is not fully implemented yet. Please use Simple mode for testing.' 
+        message: '⚠️ Please connect your wallet first' 
       });
       return;
     }
 
+    const addresses = employees.map(e => e.address);
+    const salaries = employees.map(e => e.salary);
+
     try {
-      const addresses = employees.map(e => e.address);
-      const salaries = employees.map(e => e.salary);
-
-      const res = await createPayrollSimple(title, addresses, salaries);
-
-      if (res.success) {
-        setResult({
-          type: 'success',
-          message: `✅ Payroll plan created successfully! Plan ID: ${res.planId}\nTx Hash: ${res.txHash}`
+      if (contractType === 'fhe') {
+        // FHE Mode: Encrypt salaries first
+        setResult({ 
+          type: 'success', 
+          message: '🔐 Encrypting salaries... Please wait...' 
         });
-        
-        // Reset form
-        setTitle('');
-        setEmployees([{ address: '', salary: '' }]);
+
+        // Create encrypted inputs
+        const { encryptedInputs, inputProofs, totalAmount } = 
+          await createEncryptedSalaries(address, salaries);
+
+        setResult({ 
+          type: 'success', 
+          message: '📝 Creating encrypted payroll on blockchain...' 
+        });
+
+        // Create FHE payroll
+        const res = await createPayrollFHE(
+          title,
+          addresses,
+          encryptedInputs,
+          inputProofs,
+          totalAmount
+        );
+
+        if (res.success) {
+          setResult({
+            type: 'success',
+            message: `✅ Encrypted payroll plan created successfully!\n\n🔐 Plan ID: ${res.planId}\n📝 Transaction Hash: ${res.txHash}\n\nAll salaries are fully encrypted on-chain. Only employees can decrypt their own salary.`
+          });
+          
+          // Reset form
+          setTitle('');
+          setEmployees([{ address: '', salary: '' }]);
+        } else {
+          setResult({
+            type: 'error',
+            message: `❌ Creation failed: ${res.error}`
+          });
+        }
       } else {
-        setResult({
-          type: 'error',
-          message: `❌ Creation failed: ${res.error}`
-        });
+        // Simple Mode
+        const res = await createPayrollSimple(title, addresses, salaries);
+
+        if (res.success) {
+          setResult({
+            type: 'success',
+            message: `✅ Payroll plan created successfully! Plan ID: ${res.planId}\nTx Hash: ${res.txHash}`
+          });
+          
+          // Reset form
+          setTitle('');
+          setEmployees([{ address: '', salary: '' }]);
+        } else {
+          setResult({
+            type: 'error',
+            message: `❌ Creation failed: ${res.error}`
+          });
+        }
       }
     } catch (err: any) {
+      console.error('Payroll creation error:', err);
       setResult({
         type: 'error',
-        message: `❌ Error occurred: ${err.message}`
+        message: `❌ Error occurred: ${err.message || 'Unknown error'}`
       });
     }
   };

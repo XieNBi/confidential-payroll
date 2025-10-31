@@ -3,15 +3,27 @@
  */
 
 import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
 import { usePayroll, PayrollPlan } from '../hooks/usePayroll';
+import { useDecryption } from '../hooks/useDecryption';
 import { useWallet } from '../contexts/WalletContext';
 import { useContract } from '../contexts/ContractContext';
+import { PAYROLL_FHE_ADDRESS } from '../constants/contracts';
+import { PAYROLL_FHE_ABI } from '../constants/abis';
 import './EmployeePanel.css';
 
 export default function EmployeePanel() {
-  const { address } = useWallet();
+  const { signer } = useWallet();
   const { contractType } = useContract();
   const { getPlanCount, getPlanInfo, getMySalary, claimSalary, loading } = usePayroll();
+  const { 
+    requestSalaryDecryption, 
+    retryDecryption,
+    status: decryptionStatus, 
+    progress: decryptionProgress,
+    error: decryptionError,
+    result: decryptionResult 
+  } = useDecryption();
 
   const [planId, setPlanId] = useState<string>('');
   const [currentPlan, setCurrentPlan] = useState<PayrollPlan | null>(null);
@@ -19,6 +31,7 @@ export default function EmployeePanel() {
   const [hasClaimed, setHasClaimed] = useState<boolean>(false);
   const [result, setResult] = useState<{type: 'success' | 'error', message: string} | null>(null);
   const [totalPlans, setTotalPlans] = useState<number>(0);
+  const [needsDecryption, setNeedsDecryption] = useState<boolean>(false);
 
   // Load total payroll plans count
   useEffect(() => {
@@ -55,15 +68,25 @@ export default function EmployeePanel() {
       const salary = await getMySalary(Number(planId));
       
       if (salary === null || salary === '0.0') {
-        setResult({ 
-          type: 'error', 
-          message: '❌ You are not in this payroll plan, or salary not yet decrypted (FHE mode requires decryption)' 
-        });
+        if (contractType === 'fhe') {
+          // FHE 模式：可能需要解密
+          setNeedsDecryption(true);
+          setResult({ 
+            type: 'error', 
+            message: '🔐 Your salary is encrypted. Please decrypt it first.' 
+          });
+        } else {
+          setResult({ 
+            type: 'error', 
+            message: '❌ You are not in this payroll plan' 
+          });
+        }
         setMySalary(null);
         return;
       }
 
       setMySalary(salary);
+      setNeedsDecryption(false);
       
       // Check if already claimed
       // TODO: Implement hasClaimed check
@@ -180,8 +203,88 @@ export default function EmployeePanel() {
           </div>
         )}
 
+        {/* Decryption UI (FHE mode only) */}
+        {contractType === 'fhe' && needsDecryption && currentPlan && (
+          <div className="decryption-card">
+            <h3>🔐 Decrypt Your Salary</h3>
+            <p className="decryption-hint">
+              Your salary is encrypted. Please decrypt it to view the amount.
+            </p>
+            
+            {/* Decryption Progress */}
+            {(decryptionStatus === 'requesting' || decryptionStatus === 'polling' || decryptionStatus === 'waiting') && (
+              <div className="decryption-progress">
+                <div className="progress-bar">
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${decryptionProgress}%` }}
+                  ></div>
+                </div>
+                <p className="progress-text">
+                  {decryptionStatus === 'requesting' && '📝 Submitting decryption request...'}
+                  {decryptionStatus === 'polling' && `⏳ Polling Gateway... (${decryptionProgress}%)`}
+                  {decryptionStatus === 'waiting' && '⏳ Waiting for on-chain callback...'}
+                </p>
+              </div>
+            )}
+
+            {/* Decryption Error */}
+            {decryptionError && (
+              <div className="decryption-error">
+                <p>❌ {decryptionError}</p>
+                <button
+                  onClick={async () => {
+                    if (!signer) return;
+                    const contract = new ethers.Contract(PAYROLL_FHE_ADDRESS, PAYROLL_FHE_ABI, signer);
+                    try {
+                      await retryDecryption(contract, Number(planId));
+                    } catch (err: any) {
+                      setResult({ type: 'error', message: `Retry failed: ${err.message}` });
+                    }
+                  }}
+                  className="secondary"
+                >
+                  🔄 Retry
+                </button>
+              </div>
+            )}
+
+            {/* Decrypt Button */}
+            {decryptionStatus === 'idle' && (
+              <button
+                onClick={async () => {
+                  if (!signer) {
+                    setResult({ type: 'error', message: 'Please connect wallet first' });
+                    return;
+                  }
+                  try {
+                    setResult(null);
+                    const contract = new ethers.Contract(PAYROLL_FHE_ADDRESS, PAYROLL_FHE_ABI, signer);
+                    const result = await requestSalaryDecryption(contract, Number(planId));
+                    // 解密完成后，自动刷新薪资
+                    if (result) {
+                      setMySalary(result.decryptedSalary);
+                      setNeedsDecryption(false);
+                      setResult({
+                        type: 'success',
+                        message: `✅ Decryption completed! Your salary: ${result.decryptedSalary} ETH`
+                      });
+                    }
+                  } catch (err: any) {
+                    setResult({ type: 'error', message: `Decryption failed: ${err.message}` });
+                  }
+                }}
+                disabled={decryptionStatus !== 'idle' || !signer}
+                className="primary decrypt-btn"
+              >
+                {decryptionStatus === 'idle' ? '🔓 Decrypt Salary' : 'Processing...'}
+              </button>
+            )}
+          </div>
+        )}
+
         {/* My salary */}
-        {mySalary && (
+        {mySalary && !needsDecryption && (
           <div className="salary-card">
             <div className="salary-header">
               <h3>💰 Your Salary</h3>

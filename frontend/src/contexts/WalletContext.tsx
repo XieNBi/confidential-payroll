@@ -2,9 +2,16 @@
  * Wallet Connection Context
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { ethers } from 'ethers';
 import { NETWORK_CONFIG } from '../constants/contracts';
+
+// Declare ethereum on window object
+declare global {
+  interface Window {
+    ethereum?: any;
+  }
+}
 
 interface WalletContextType {
   address: string | null;

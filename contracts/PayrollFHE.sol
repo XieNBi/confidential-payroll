@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import "fhevm/lib/TFHE.sol";
+import "fhevm/gateway/GatewayCaller.sol";
 
 /**
  * @title PayrollFHE
@@ -11,9 +12,30 @@ import "fhevm/lib/TFHE.sol";
  * 🔐 使用 Zama FHEVM 技术：
  * - euint64: 加密的 64 位无符号整数
  * - TFHE库: 完全同态加密操作
+ * - Gateway: 链下解密服务
  * - 链上数据完全加密存储
  */
-contract PayrollFHE {
+contract PayrollFHE is GatewayCaller {
+    
+    // ========== 状态枚举 ==========
+    
+    enum PlanStatus {
+        ACTIVE,           // 进行中
+        PENDING_DECRYPT,  // 等待解密
+        COMPLETED,        // 已完成
+        CANCELLED,        // 已取消
+        EXPIRED           // 已过期
+    }
+    
+    // ========== 解密请求结构 ==========
+    
+    struct DecryptionRequest {
+        uint256 planId;
+        address requester;
+        uint256 timestamp;
+        uint8 retryCount;
+        bool processed;
+    }
     
     // ========== 状态变量 ==========
     
@@ -27,11 +49,22 @@ contract PayrollFHE {
         mapping(address => uint256) decryptedSalaries;  // 解密后的薪资（仅领取时）
         uint256 totalAmount;        // 总金额（明文，企业需要知道总支出）
         uint256 createdAt;          // 创建时间
-        bool isActive;              // 是否激活
+        PlanStatus status;          // 计划状态
     }
     
     uint256 public planCounter;
     mapping(uint256 => PayrollPlan) public plans;
+    
+    // ========== 请求追踪系统 ==========
+    mapping(uint256 => DecryptionRequest) public decryptionRequests;
+    mapping(uint256 => uint256) public planToRequestId;  // 计划ID => 请求ID
+    mapping(uint256 => uint256) public requestIdToPlan;  // 请求ID => 计划ID
+    mapping(uint256 => address) public requestToEmployee; // 请求ID => 员工地址
+    
+    // ========== 配置常量 ==========
+    uint256 public constant CALLBACK_GAS_LIMIT = 500000;
+    uint256 public constant REQUEST_TIMEOUT = 30 minutes;
+    uint8 public constant MAX_RETRIES = 3;
     
     // ========== 事件 ==========
     
@@ -42,6 +75,32 @@ contract PayrollFHE {
         uint256 employeeCount,
         uint256 totalAmount,
         uint256 timestamp
+    );
+    
+    event SalaryDecryptionRequested(
+        uint256 indexed requestId,
+        uint256 indexed planId,
+        address indexed employee,
+        uint256 timestamp
+    );
+    
+    event SalaryDecryptionCompleted(
+        uint256 indexed requestId,
+        uint256 indexed planId,
+        address indexed employee,
+        uint256 decryptedSalary,
+        uint256 timestamp
+    );
+    
+    event SalaryDecryptionFailed(
+        uint256 indexed requestId,
+        uint256 indexed planId,
+        string reason
+    );
+    
+    event SalaryDecryptionRetrying(
+        uint256 indexed requestId,
+        uint8 retryCount
     );
     
     event SalaryClaimed(
@@ -86,7 +145,7 @@ contract PayrollFHE {
         plan.employees = _employees;
         plan.totalAmount = msg.value;  // 总金额以 msg.value 为准
         plan.createdAt = block.timestamp;
-        plan.isActive = true;
+        plan.status = PlanStatus.ACTIVE;
         
         // 转换并存储每个员工的加密薪资
         for (uint256 i = 0; i < _employees.length; i++) {
@@ -112,20 +171,21 @@ contract PayrollFHE {
     }
     
     /**
-     * @notice 简化版：直接领取薪资（无需解密步骤）
+     * @notice 请求解密薪资（标准 Gateway 流程）
      * @param _planId 薪酬计划 ID
-     * @param _amount 薪资金额（Wei）
-     * @dev 简化版本：员工提供金额，合约验证后转账
-     * 
-     * 注：完整版需要 Gateway 解密，这里为了演示简化流程
+     * @return requestId Gateway 请求 ID
      */
-    function requestClaim(uint256 _planId, uint256 _amount) external {
+    function requestSalaryDecryption(uint256 _planId) 
+        external 
+        returns (uint256 requestId) 
+    {
         PayrollPlan storage plan = plans[_planId];
         
-        require(plan.isActive, "Plan not active");
+        // 1. 验证计划状态
+        require(plan.status == PlanStatus.ACTIVE, "Plan not active");
         require(!plan.hasClaimed[msg.sender], "Already claimed");
         
-        // 验证是否在员工列表中
+        // 2. 验证是否在员工列表中
         bool isEmployee = false;
         for (uint256 i = 0; i < plan.employees.length; i++) {
             if (plan.employees[i] == msg.sender) {
@@ -135,20 +195,132 @@ contract PayrollFHE {
         }
         require(isEmployee, "Not in payroll");
         
-        // 记录解密后的金额
-        plan.decryptedSalaries[msg.sender] = _amount;
+        // 3. 获取加密薪资
+        euint64 encryptedSalary = plan.encryptedSalaries[msg.sender];
+        
+        // 4. 授权 Gateway 访问
+        TFHE.allow(encryptedSalary, Gateway.GATEWAY_CONTRACT_ADDRESS);
+        
+        // 5. 转换为 uint256 数组（Gateway 需要）
+        uint256[] memory cts = new uint256[](1);
+        cts[0] = Gateway.toUint256(encryptedSalary);
+        
+        // 6. 请求 Gateway 解密
+        requestId = Gateway.requestDecryption(
+            cts,
+            this._handleSalaryDecryptionCallback.selector,
+            CALLBACK_GAS_LIMIT,
+            block.timestamp + REQUEST_TIMEOUT,
+            false  // 不是单用户解密
+        );
+        
+        // 7. 记录请求映射
+        decryptionRequests[requestId] = DecryptionRequest({
+            planId: _planId,
+            requester: msg.sender,
+            timestamp: block.timestamp,
+            retryCount: 0,
+            processed: false
+        });
+        
+        planToRequestId[_planId] = requestId;
+        requestIdToPlan[requestId] = _planId;
+        requestToEmployee[requestId] = msg.sender;
+        
+        // 8. 更新状态
+        plan.status = PlanStatus.PENDING_DECRYPT;
+        
+        emit SalaryDecryptionRequested(requestId, _planId, msg.sender, block.timestamp);
     }
     
     /**
-     * @notice 员工领取薪资（需要先调用 requestClaim）
+     * @notice Gateway 回调函数（解密完成后调用）
+     * @param requestId Gateway 请求 ID
+     * @param decryptedSalary 解密后的薪资金额
+     */
+    function _handleSalaryDecryptionCallback(
+        uint256 requestId,
+        uint64 decryptedSalary
+    ) public onlyGateway {
+        DecryptionRequest storage request = decryptionRequests[requestId];
+        
+        // 完整验证（防止重放攻击）
+        require(request.timestamp > 0, "Invalid request ID");
+        require(!request.processed, "Request already processed");
+        require(
+            block.timestamp <= request.timestamp + REQUEST_TIMEOUT,
+            "Request expired"
+        );
+        
+        uint256 planId = request.planId;
+        PayrollPlan storage plan = plans[planId];
+        address employee = requestToEmployee[requestId];
+        
+        require(plan.status == PlanStatus.PENDING_DECRYPT, "Invalid plan state");
+        require(!plan.hasClaimed[employee], "Already claimed");
+        
+        // 更新解密结果
+        plan.decryptedSalaries[employee] = decryptedSalary;
+        plan.status = PlanStatus.ACTIVE;  // 恢复为活跃状态
+        
+        // 标记已处理
+        request.processed = true;
+        
+        emit SalaryDecryptionCompleted(
+            requestId,
+            planId,
+            employee,
+            decryptedSalary,
+            block.timestamp
+        );
+    }
+    
+    /**
+     * @notice 重试解密请求
+     * @param _planId 薪酬计划 ID
+     * @return newRequestId 新的请求 ID
+     */
+    function retrySalaryDecryption(uint256 _planId) 
+        external 
+        returns (uint256 newRequestId) 
+    {
+        uint256 oldRequestId = planToRequestId[_planId];
+        DecryptionRequest storage request = decryptionRequests[oldRequestId];
+        PayrollPlan storage plan = plans[_planId];
+        
+        require(plan.status == PlanStatus.PENDING_DECRYPT, "Not retriable");
+        require(!request.processed, "Already processed");
+        require(request.retryCount < MAX_RETRIES, "Max retries exceeded");
+        require(
+            block.timestamp > request.timestamp + 5 minutes,
+            "Too soon to retry"
+        );
+        
+        request.retryCount++;
+        emit SalaryDecryptionRetrying(oldRequestId, request.retryCount);
+        
+        // 重新提交请求
+        address employee = requestToEmployee[oldRequestId];
+        require(employee == msg.sender, "Only requester can retry");
+        
+        // 调用原始请求函数（重置状态）
+        newRequestId = this.requestSalaryDecryption(_planId);
+        return newRequestId;
+    }
+    
+    /**
+     * @notice 员工领取薪资（需要先完成解密）
      * @param _planId 薪酬计划 ID
      */
     function claimSalary(uint256 _planId) external {
         PayrollPlan storage plan = plans[_planId];
         
-        require(plan.isActive, "Plan not active");
+        require(
+            plan.status == PlanStatus.ACTIVE || plan.status == PlanStatus.PENDING_DECRYPT,
+            "Plan not active"
+        );
         require(!plan.hasClaimed[msg.sender], "Already claimed");
-        require(plan.decryptedSalaries[msg.sender] > 0, "Need to call requestClaim first");
+        require(plan.decryptedSalaries[msg.sender] > 0, "Salary not decrypted yet");
         
         uint256 salary = plan.decryptedSalaries[msg.sender];
         plan.hasClaimed[msg.sender] = true;
@@ -158,6 +330,19 @@ contract PayrollFHE {
         payable(msg.sender).transfer(salary);
         
         emit SalaryClaimed(_planId, msg.sender, salary, block.timestamp);
+        
+        // 检查是否所有人都已领取
+        bool allClaimed = true;
+        for (uint256 i = 0; i < plan.employees.length; i++) {
+            if (!plan.hasClaimed[plan.employees[i]]) {
+                allClaimed = false;
+                break;
+            }
+        }
+        
+        if (allClaimed) {
+            plan.status = PlanStatus.COMPLETED;
+        }
     }
     
     /**
@@ -168,9 +353,12 @@ contract PayrollFHE {
         PayrollPlan storage plan = plans[_planId];
         
         require(msg.sender == plan.employer, "Not employer");
-        require(plan.isActive, "Plan not active");
+        require(
+            plan.status == PlanStatus.ACTIVE || plan.status == PlanStatus.PENDING_DECRYPT,
+            "Plan not active"
+        );
         
-        plan.isActive = false;
+        plan.status = PlanStatus.CANCELLED;
         
         // 计算未领取的金额并退款
         uint256 unclaimedAmount = 0;
@@ -200,7 +388,7 @@ contract PayrollFHE {
         uint256 employeeCount,
         uint256 totalAmount,
         uint256 createdAt,
-        bool isActive
+        uint8 status  // 返回枚举值
     ) {
         PayrollPlan storage plan = plans[_planId];
         return (
@@ -210,7 +398,31 @@ contract PayrollFHE {
             plan.employees.length,
             plan.totalAmount,
             plan.createdAt,
-            plan.isActive
+            uint8(plan.status)
+        );
+    }
+    
+    /**
+     * @notice 获取解密请求信息
+     */
+    function getDecryptionRequest(uint256 _requestId) 
+        external 
+        view 
+        returns (
+            uint256 planId,
+            address requester,
+            uint256 timestamp,
+            uint8 retryCount,
+            bool processed
+        ) 
+    {
+        DecryptionRequest storage request = decryptionRequests[_requestId];
+        return (
+            request.planId,
+            request.requester,
+            request.timestamp,
+            request.retryCount,
+            request.processed
         );
     }
     

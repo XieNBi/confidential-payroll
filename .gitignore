@@ -21,6 +21,11 @@ typechain-types/
 # Deployment info (may contain sensitive data)
 deployment_simple.json
 deployment_fhe.json
+deployment_*.json
+
+# Local development files
+*.local
+*.backup
 
 # Logs
 *.log

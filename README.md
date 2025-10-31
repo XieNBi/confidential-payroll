@@ -12,6 +12,27 @@
 
 A revolutionary Web3 payroll distribution platform using Zama's Fully Homomorphic Encryption (FHE) technology to ensure complete confidentiality of employee salary information.
 
+## 🎥 Demo Video
+
+> 🎬 **[Watch Demo Video](YOUR_VIDEO_LINK_HERE)** - 3-minute walkthrough of the platform
+
+[![Demo Video Thumbnail](https://img.shields.io/badge/▶️-Watch%20Demo-FF0000?style=for-the-badge&logo=youtube)](YOUR_VIDEO_LINK_HERE)
+
+## 🌐 Live Demo
+
+- **🇨🇳 China-Friendly**: [https://confidential-payroll.vercel.app](https://confidential-payroll.vercel.app) (Recommended for users in mainland China)
+- **🌍 Global**: [https://celadon-meerkat-ee26c4.netlify.app](https://celadon-meerkat-ee26c4.netlify.app)
+
+## 🏆 Zama Developer Program
+
+This project is submitted to the **Zama Developer Program - Builder Track**.
+
+**Why this project matters:**
+- 🎯 Solves real-world payroll privacy problem
+- 🔐 Demonstrates practical FHE implementation
+- 🏗️ Production-ready architecture with fallback
+- 📚 Well-documented for community learning
+
 ## 🌟 Highlights
 
 ### 🔒 **Cryptographic-Level Privacy Protection**
