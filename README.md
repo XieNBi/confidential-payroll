@@ -14,7 +14,7 @@ A revolutionary Web3 payroll distribution platform using Zama's Fully Homomorphi
 
 ## 🎥 Demo Video
 
-> 🎬 **[Watch Demo Video](YOUR_VIDEO_LINK_HERE)** - 3-minute walkthrough of the platform
+> 🎬 **[Watch Demo Video](https://youtu.be/wLfLh1QgKCw)** - 3-minute walkthrough of the platform
 
 [![Demo Video Thumbnail](https://img.shields.io/badge/▶️-Watch%20Demo-FF0000?style=for-the-badge&logo=youtube)](YOUR_VIDEO_LINK_HERE)
 
