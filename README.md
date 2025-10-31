@@ -21,7 +21,6 @@ A revolutionary Web3 payroll distribution platform using Zama's Fully Homomorphi
 ## 🌐 Live Demo
 
 - **🇨🇳 China-Friendly**: [https://confidential-payroll.vercel.app](https://confidential-payroll.vercel.app) (Recommended for users in mainland China)
-- **🌍 Global**: [https://celadon-meerkat-ee26c4.netlify.app](https://celadon-meerkat-ee26c4.netlify.app)
 
 ## 🏆 Zama Developer Program
 
